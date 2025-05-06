@@ -1,0 +1,362 @@
+{% extends 'cuoiky/base.html' %}
+{% load static %}
+
+{% block title %}Tổng quan - VLXD Xuân Trường{% endblock %}
+
+{% block page_title %}Tổng quan{% endblock %}
+
+{% block content %}
+    <style>
+        /* CSS scoped cho Chart.js */
+        #pieChart {
+            max-width: 100%;
+            height: auto;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+        }
+        /* Sử dụng font Inter cho trang này */
+        .dashboard-content {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+
+    <div class="dashboard-content">
+        <h1 class="tw-text-2xl tw-font-semibold tw-text-gray-800 tw-mb-8 tw-text-center">Tổng Quan Hệ Thống Quản Lý Kho</h1>
+
+        <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8">
+            <div class="tw-bg-white tw-shadow-md tw-rounded-lg tw-p-6">
+                <h2 class="tw-text-xl tw-font-semibold tw-text-gray-700 tw-mb-4">Báo cáo Nhập - Xuất Kho</h2>
+                <div class="tw-flex tw-flex-col md:tw-flex-row tw-items-center tw-gap-6">
+                    <div class="tw-w-full md:tw-w-1/2">
+                        <canvas id="pieChart" width="200" height="200"></canvas>
+                    </div>
+                    <div class="tw-w-full md:tw-w-1/2 tw-flex tw-flex-col tw-gap-4 tw-justify-center tw-items-start">
+                        <div class="tw-flex tw-items-center tw-gap-2">
+                            <div class="tw-w-3 tw-h-3 tw-bg-blue-500 tw-rounded-full"></div>
+                            <span class="tw-text-gray-600 tw-font-medium">Tổng số lượng nhập: <span id="total-import" class="tw-text-blue-500">{{ total_import }}</span></span>
+                        </div>
+                        <div class="tw-flex tw-items-center tw-gap-2">
+                            <div class="tw-w-3 tw-h-3 tw-bg-red-500 tw-rounded-full"></div>
+                            <span class="tw-text-gray-600 tw-font-medium">Tổng số lượng xuất: <span id="total-export" class="tw-text-blue-500">{{ total_export }}</span></span>
+                        </div>
+                        <div class="tw-mt-4 tw-p-4 tw-bg-gray-50 tw-rounded-md tw-border tw-border-gray-200">
+                            <p class="tw-text-gray-700">
+                                <span class="tw-font-semibold tw-text-green-600">Lưu ý:</span><br>
+                                Dữ liệu được tính toán dựa trên các phiếu nhập và xuất đã được duyệt.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tw-bg-white tw-shadow-md tw-rounded-lg tw-p-6">
+                <h2 class="tw-text-xl tw-font-semibold tw-text-gray-700 tw-mb-4">Thống kê Tình trạng hàng hóa</h2>
+                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                    <div class="tw-bg-green-100 tw-border-l-4 tw-border-green-500 tw-text-green-700 tw-p-4 tw-rounded">
+                        <p class="tw-text-sm tw-font-medium">Còn hàng</p>
+                        <p id="con-hang" class="tw-text-xl tw-font-bold">{{ con_hang_count }}</p>
+                    </div>
+                    <div class="tw-bg-yellow-100 tw-border-l-4 tw-border-yellow-500 tw-text-yellow-700 tw-p-4 tw-rounded">
+                        <p class="tw-text-sm tw-font-medium">Gần hết hàng</p>
+                        <p id="gan-het-hang" class="tw-text-xl tw-font-bold">{{ gan_het_hang_count }}</p>
+                    </div>
+                    <div class="tw-bg-red-100 tw-border-l-4 tw-border-red-500 tw-text-red-700 tw-p-4 tw-rounded">
+                        <p class="tw-text-sm tw-font-medium">Hết hàng</p>
+                        <p id="het-hang" class="tw-text-xl tw-font-bold">{{ het_hang_count }}</p>
+                    </div>
+                    <div class="tw-bg-blue-100 tw-border-l-4 tw-border-blue-500 tw-text-blue-700 tw-p-4 tw-rounded">
+                        <p class="tw-text-sm tw-font-medium">Tổng số loại hàng hóa</p>
+                        <p id="tong-hang-hoa" class="tw-text-xl tw-font-bold">{{ tong_hang_hoa_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-8 tw-mt-8">
+            <div class="tw-bg-white tw-shadow-md tw-rounded-lg tw-p-6">
+                <h2 class="tw-text-xl tw-font-semibold tw-text-gray-700 tw-mb-4">Thống kê Nhập kho</h2>
+                <div class="tw-space-y-3">
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu nhập trong tháng:</span>
+                        <span id="phieu-nhap-thang" class="tw-text-blue-500 tw-font-semibold">{{ phieu_nhap_thang_count }}</span>
+                    </div>
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Tổng giá trị nhập trong tháng:</span>
+                        <span id="gia-tri-nhap-thang" class="tw-text-green-500 tw-font-semibold">{{ gia_tri_nhap_thang }}</span>
+                    </div>
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu nhập chờ duyệt:</span>
+                        <span id="phieu-nhap-cho-duyet" class="tw-text-yellow-500 tw-font-semibold">{{ phieu_nhap_cho_duyet_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tw-bg-white tw-shadow-md tw-rounded-lg tw-p-6">
+                <h2 class="tw-text-xl tw-font-semibold tw-text-gray-700 tw-mb-4">Thống kê Xuất kho</h2>
+                <div class="tw-space-y-3">
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu xuất trong tháng:</span>
+                        <span id="phieu-xuat-thang" class="tw-text-blue-500 tw-font-semibold">{{ phieu_xuat_thang_count }}</span>
+                    </div>
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Tổng giá trị xuất trong tháng:</span>
+                        <span id="gia-tri-xuat-thang" class="tw-text-red-500 tw-font-semibold">{{ gia_tri_xuat_thang }}</span>
+                    </div>
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu xuất chờ duyệt:</span>
+                        <span id="phieu-xuat-cho-duyet" class="tw-text-yellow-500 tw-font-semibold">{{ phieu_xuat_cho_duyet_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tw-bg-white tw-shadow-md tw-rounded-lg tw-p-6">
+                <h2 class="tw-text-xl tw-font-semibold tw-text-gray-700 tw-mb-4">Thống kê Kiểm kê</h2>
+                <div class="tw-space-y-3">
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu kiểm kê trong tháng:</span>
+                        <span id="phieu-kiem-ke-thang" class="tw-text-purple-500 tw-font-semibold">{{ phieu_kiem_ke_thang_count }}</span>
+                    </div>
+                    <div>
+                        <span class="tw-text-gray-600 tw-font-medium">Số phiếu kiểm kê chờ duyệt:</span>
+                        <span id="phieu-kiem-ke-cho-duyet" class="tw-text-yellow-500 tw-font-semibold">{{ phieu_kiem_ke_cho_duyet_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lấy dữ liệu từ các phần tử HTML
+        const totalImportElement = document.getElementById('total-import');
+        const totalExportElement = document.getElementById('total-export');
+        const conHangElement = document.getElementById('con-hang');
+        const ganHetHangElement = document.getElementById('gan-het-hang');
+        const hetHangElement = document.getElementById('het-hang');
+        const tongHangHoaElement = document.getElementById('tong-hang-hoa');
+        const phieuNhapThangElement = document.getElementById('phieu-nhap-thang');
+        const giaTriNhapThangElement = document.getElementById('gia-tri-nhap-thang');
+        const phieuNhapChoDuyetElement = document.getElementById('phieu-nhap-cho-duyet');
+        const phieuXuatThangElement = document.getElementById('phieu-xuat-thang');
+        const giaTriXuatThangElement = document.getElementById('gia-tri-xuat-thang');
+        const phieuXuatChoDuyetElement = document.getElementById('phieu-xuat-cho-duyet');
+        const phieuKiemKeThangElement = document.getElementById('phieu-kiem-ke-thang');
+        const phieuKiemKeChoDuyetElement = document.getElementById('phieu-kiem-ke-cho-duyet');
+
+        // Khởi tạo biểu đồ tròn
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Nhập', 'Xuất'],
+                datasets: [{
+                    label: 'Tỷ lệ Nhập - Xuất',
+                    data: [0, 0], // Giá trị khởi tạo là 0
+                    backgroundColor: [
+                        'rgba(56, 189, 248, 0.7)',
+                        'rgba(220, 38, 38, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgba(56, 189, 248, 1)',
+                        'rgba(220, 38, 38, 1)',
+                    ],
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14,
+                            },
+                            color: '#6b7280',
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + ' đơn vị';
+                                }
+                                return label;
+                            },
+                        },
+                        backgroundColor: '#fff',
+                        titleColor: '#6b7280',
+                        bodyColor: '#374151',
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        cornerRadius: 4,
+                        displayColors: true,
+                    },
+                },
+            },
+        });
+
+        // Hàm cập nhật biểu đồ tròn với dữ liệu mới
+        function updatePieChart(importValue, exportValue) {
+            pieChart.data.datasets[0].data = [importValue, exportValue];
+            pieChart.update();
+        }
+
+        // Cập nhật dữ liệu khi trang được tải
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy dữ liệu từ các biến Django đã truyền vào template
+            const data = {
+                totalImport: {{ total_import }},
+                totalExport: {{ total_export }},
+                conHang: {{ con_hang_count }},
+                ganHetHang: {{ gan_het_hang_count }},
+                hetHang: {{ het_hang_count }},
+                tongHangHoa: {{ tong_hang_hoa_count }},
+                phieuNhapThang: {{ phieu_nhap_thang_count }},
+                giaTriNhapThang: {{ gia_tri_nhap_thang }},
+                phieuNhapChoDuyet: {{ phieu_nhap_cho_duyet_count }},
+                phieuXuatThang: {{ phieu_xuat_thang_count }},
+                giaTriXuatThang: {{ gia_tri_xuat_thang }},
+                phieuXuatChoDuyet: {{ phieu_xuat_cho_duyet_count }},
+                phieuKiemKeThang: {{ phieu_kiem_ke_thang_count }},
+                phieuKiemKeChoDuyet: {{ phieu_kiem_ke_cho_duyet_count }},
+            };
+
+            // Cập nhật các phần tử HTML với dữ liệu
+            totalImportElement.textContent = data.totalImport;
+            totalExportElement.textContent = data.totalExport;
+            conHangElement.textContent = data.conHang;
+            ganHetHangElement.textContent = data.ganHetHang;
+            hetHangElement.textContent = data.hetHang;
+            tongHangHoaElement.textContent = data.tongHangHoa;
+            phieuNhapThangElement.textContent = data.phieuNhapThang;
+            giaTriNhapThangElement.textContent = data.giaTriNhapThang.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            phieuNhapChoDuyetElement.textContent = data.phieuNhapChoDuyet;
+            phieuXuatThangElement.textContent = data.phieuXuatThang;
+            giaTriXuatThangElement.textContent = data.giaTriXuatThang.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            phieuXuatChoDuyetElement.textContent = data.phieuXuatChoDuyet;
+            phieuKiemKeThangElement.textContent = data.phieuKiemKeThang;
+            phieuKiemKeChoDuyetElement.textContent = data.phieuKiemKeChoDuyet;
+
+            // Cập nhật biểu đồ tròn với dữ liệu từ Django
+            updatePieChart(data.totalImport, data.totalExport);
+
+            // Khởi tạo lại các menu collapse
+            setTimeout(function() {
+                // Đảm bảo Bootstrap đã được tải
+                if (typeof bootstrap !== 'undefined') {
+                    // Khởi tạo lại các menu collapse
+                    var collapseElementList = [].slice.call(document.querySelectorAll('.collapse'))
+                    collapseElementList.forEach(function(collapseEl) {
+                        new bootstrap.Collapse(collapseEl, {
+                            toggle: false
+                        });
+                    });
+                }
+            }, 100);
+        });
+    </script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Định dạng tiền tệ
+        const giaTriNhapThangElement = document.getElementById('gia-tri-nhap-thang');
+        const giaTriXuatThangElement = document.getElementById('gia-tri-xuat-thang');
+
+        if (giaTriNhapThangElement) {
+            const giaTriNhap = parseFloat(giaTriNhapThangElement.textContent);
+            giaTriNhapThangElement.textContent = giaTriNhap.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        }
+
+        if (giaTriXuatThangElement) {
+            const giaTriXuat = parseFloat(giaTriXuatThangElement.textContent);
+            giaTriXuatThangElement.textContent = giaTriXuat.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        }
+
+        // Khởi tạo biểu đồ tròn
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Nhập', 'Xuất'],
+                datasets: [{
+                    label: 'Tỷ lệ Nhập - Xuất',
+                    data: [{{ total_import }}, {{ total_export }}],
+                    backgroundColor: [
+                        'rgba(56, 189, 248, 0.7)',
+                        'rgba(220, 38, 38, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgba(56, 189, 248, 1)',
+                        'rgba(220, 38, 38, 1)',
+                    ],
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14,
+                            },
+                            color: '#6b7280',
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + ' đơn vị';
+                                }
+                                return label;
+                            },
+                        },
+                        backgroundColor: '#fff',
+                        titleColor: '#6b7280',
+                        bodyColor: '#374151',
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        cornerRadius: 4,
+                        displayColors: true,
+                    },
+                },
+            },
+        });
+
+        // Đảm bảo menu được mở khi cần thiết
+        if (typeof openXuatNhapMenu === 'function') {
+            // Thêm nút để mở menu Xuất-nhập nếu cần
+            var menuHelper = document.createElement('div');
+            menuHelper.className = 'position-fixed bottom-0 start-0 m-4';
+            menuHelper.style.zIndex = '1000';
+            menuHelper.innerHTML = `
+                <button id="openXuatNhapMenuBtn" class="btn btn-primary btn-sm">
+                    <i class="fas fa-exchange-alt me-1"></i> Mở menu Xuất-nhập
+                </button>
+            `;
+            document.body.appendChild(menuHelper);
+
+            // Thêm sự kiện click cho nút
+            document.getElementById('openXuatNhapMenuBtn').addEventListener('click', function() {
+                openXuatNhapMenu();
+            });
+        }
+    });
+</script>
+{% endblock %}

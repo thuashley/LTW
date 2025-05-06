@@ -1,0 +1,155 @@
+{% extends 'cuoiky/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load widget_tweaks %}
+
+{% block title %}Chi tiết phiếu xuất kho - VLXD Xuân Trường{% endblock %}
+
+{% block page_title %}Chi tiết phiếu xuất kho{% endblock %}
+
+{% block extra_head %}
+<style>
+    .delete-row {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    .hang-hoa-row td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">CHI TIẾT PHIẾU XUẤT KHO</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="xuatkhoForm">
+            {% csrf_token %}
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Mã phiếu</label>
+                        <p class="form-control-plaintext">{{ xuatkho.ma_xuat }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nguồn nhận</label>
+                        <p class="form-control-plaintext">{{ xuatkho.nguon_nhan }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <p class="form-control-plaintext">{{ xuatkho.sdt }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Người tạo</label>
+                        <p class="form-control-plaintext">{{ xuatkho.tao_boi }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ngày tạo phiếu</label>
+                        <p class="form-control-plaintext">{{ xuatkho.ngay_tao|date:"d/m/Y H:i" }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">File hợp đồng</label>
+                        {% if xuatkho.url_hop_dong %}
+                        <p class="form-control-plaintext"><a href="{{ xuatkho.url_hop_dong.url }}" target="_blank">Xem file</a></p>
+                        {% else %}
+                        <p class="form-control-plaintext">Không có file</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Thời gian xuất</label>
+                        <p class="form-control-plaintext">{{ xuatkho.thoi_gian|date:"d/m/Y H:i" }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ giao hàng</label>
+                        <p class="form-control-plaintext">{{ xuatkho.diachi }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Lý do xuất</label>
+                        <p class="form-control-plaintext">{{ xuatkho.ly_do|default:"Không có" }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tình trạng phiếu</label>
+                        <p class="form-control-plaintext">{{ xuatkho.get_tinh_trang_display }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tổng tiền</label>
+                        <p class="form-control-plaintext">{{ xuatkho.tong|floatformat:0|intcomma }} VNĐ</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">File sổ cũ</label>
+                        {% if xuatkho.url_so_cu %}
+                        <p class="form-control-plaintext"><a href="{{ xuatkho.url_so_cu.url }}" target="_blank">Xem file</a></p>
+                        {% else %}
+                        <p class="form-control-plaintext">Không có file</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="mb-3">Chi tiết hàng hóa</h5>
+
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 5%">STT</th>
+                            <th style="width: 30%">Tên hàng hóa</th>
+                            <th style="width: 15%">Mã hàng</th>
+                            <th style="width: 15%">Đơn giá xuất</th>
+                            <th style="width: 10%">Số lượng xuất</th>
+                            <th style="width: 10%">Chiết khấu (%)</th>
+                            <th style="width: 15%">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chitiet in xuatkho.chi_tiet_xuat.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ chitiet.ma_hang.ten_hang }}</td>
+                            <td>{{ chitiet.ma_hang.ma_hang }}</td>
+                            <td class="text-end">{{ chitiet.don_gia_xuat|floatformat:0 }}</td>
+                            <td class="text-end">{{ chitiet.so_luong_xuat }}</td>
+                            <td class="text-end">{{ chitiet.chiet_khau }}</td>
+                            <td class="text-end">{{ chitiet.thanh_tien|floatformat:0|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Chưa có chi tiết hàng hóa</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{% url 'xuatkho-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // JavaScript thêm nếu cần
+    });
+</script>
+{% endblock %}

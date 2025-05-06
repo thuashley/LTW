@@ -1,0 +1,29 @@
+{% extends 'cuoiky/base.html' %}
+{% block title %}{{ page_title }} - VLXD Xuân Trường{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        {# Quan trọng: Thêm enctype khi form có upload file #}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# Hiển thị ảnh hiện tại nếu đang update và có ảnh #}
+            {% if form.instance.pk and form.instance.url_image %}
+                <div class="mb-3">
+                    <label class="form-label">Ảnh hiện tại:</label><br>
+                    <img src="{{ form.instance.url_image.url }}" alt="{{ form.instance.ten_hang }}" style="max-height: 150px; max-width: 100%; border-radius: 5px;">
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="{% url 'hanghoa-list' %}" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
